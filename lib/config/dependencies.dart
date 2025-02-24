@@ -1,6 +1,9 @@
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import 'package:sqlite_offline/config/api_client.dart';
 import 'package:sqlite_offline/data/repositories/mock_task_repository.dart';
+import 'package:sqlite_offline/data/repositories/remote_task_repository.dart';
 import 'package:sqlite_offline/data/repositories/task_repository.dart';
 import 'package:sqlite_offline/domain/use_cases/task/add_task_use_case.dart';
 import 'package:sqlite_offline/domain/use_cases/task/delete_task_use_case.dart';
@@ -10,8 +13,13 @@ import 'package:sqlite_offline/ui/home/view_models/task/task_view_model.dart';
 
 List<SingleChildWidget> get providersLocal {
   return [
+    Provider<GraphQLClient>(
+      create: (context) => ApiClient.create(),
+    ),
     Provider<TaskRepository>(
-      create: (context) => MockTaskRepository(),
+      create: (context) => RemoteTaskRepository(
+        client: context.read<GraphQLClient>(),
+      ),
     ),
     Provider<AddTaskUseCase>(
       lazy: true,

@@ -28,7 +28,6 @@ query {
     isCompleted
     description
     category
-    created_at
   }
 }
 ''';
@@ -38,10 +37,12 @@ query {
     );
 
     if (result.hasException) {
-      throw Exception();
+      throw result.exception!;
     }
 
-    final data = result.data?['data']['tasks'] as List?;
+    final data = result.data?['tasks'] as List?;
+    final tasks = data?.map((e) => Task.fromMap(e)).toList();
+    return tasks ?? [];
   }
 
   @override
