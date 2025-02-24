@@ -36,9 +36,28 @@ mutation insertTask($title: String, $category: String, $description: String, $is
   }
 
   @override
-  Future<bool> deleteTask(int id) {
-    // TODO: implement deleteTask
-    throw UnimplementedError();
+  Future<bool> deleteTask(int id) async {
+    const mutationDeleteTask = r'''
+mutation deleteTaskById($id: Int!) {
+  delete_tasks_by_pk(id: $id) {
+    id
+  }
+}
+''';
+
+    final result = await client.mutate(
+      MutationOptions(
+        document: gql(mutationDeleteTask),
+        variables: {"id": id},
+      ),
+    );
+
+    if (result.hasException) {
+      throw result.exception!;
+    }
+
+    final taskId = result.data?['delete_tasks_by_pk']['id'];
+    return taskId != null;
   }
 
   @override
