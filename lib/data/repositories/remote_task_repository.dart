@@ -72,8 +72,32 @@ query {
   }
 
   @override
-  Future<bool> updateTask(Task task) {
-    // TODO: implement updateTask
-    throw UnimplementedError();
+  Future<bool> updateTask(Task task) async {
+    const mutationEditTask = r'''
+mutation editTaskById($id: Int!, $category:String, $description: String, $title: String, $isCompleted: Boolean) {
+  update_tasks_by_pk(pk_columns: {id: $id}, _set: {category: $category, title: $title, description: $description, isCompleted: $isCompleted}) {
+    id
+  }
+}
+''';
+
+    final result = await client.mutate(
+      MutationOptions(
+        document: gql(mutationEditTask),
+        variables: {
+          "id": task.id,
+          "isCompleted": task.isCompleted,
+          "description": task.description,
+          "title": task.title,
+          "category": task.category,
+        },
+      ),
+    );
+    if (result.hasException) {
+      throw result.exception!;
+    }
+
+    final taskId = result.data?['update_tasks_by_pk']['id'];
+    return taskId != null;
   }
 }
