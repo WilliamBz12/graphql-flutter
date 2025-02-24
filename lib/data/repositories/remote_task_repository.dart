@@ -7,9 +7,32 @@ class RemoteTaskRepository implements TaskRepository {
   RemoteTaskRepository({required this.client});
 
   @override
-  Future<int> addTask(Task task) {
-    // TODO: implement addTask
-    throw UnimplementedError();
+  Future<int> addTask(Task task) async {
+    const mutationCreateTask = r'''
+mutation insertTask($title: String, $category: String, $description: String, $isCompleted: Boolean) {
+  insert_tasks_one(object: {category: $category, title: $title, description: $description, isCompleted: $isCompleted}) {
+    id
+  }
+}
+''';
+    final result = await client.mutate(
+      MutationOptions(
+        document: gql(mutationCreateTask),
+        variables: {
+          "title": task.title,
+          "category": task.category,
+          "description": task.description,
+          "isCompleted": task.isCompleted,
+        },
+      ),
+    );
+
+    if (result.hasException) {
+      throw result.exception!;
+    }
+
+    final taskId = result.data?['insert_tasks_one']['id'];
+    return taskId ?? 0;
   }
 
   @override
@@ -33,7 +56,10 @@ query {
 ''';
 
     final result = await client.query(
-      QueryOptions(document: gql(queryTasks)),
+      QueryOptions(
+        document: gql(queryTasks),
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
     );
 
     if (result.hasException) {
