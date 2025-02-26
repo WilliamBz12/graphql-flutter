@@ -2,12 +2,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:provider/provider.dart';
 
 import 'config/dependencies.dart';
 import 'ui/home/widgets/home_screen.dart';
 
-void main() {
+Future<void> main() async {
+  await initHiveForFlutter();
   runApp(
     MultiProvider(
       providers: providersLocal,
