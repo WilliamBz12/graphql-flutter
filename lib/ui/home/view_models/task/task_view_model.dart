@@ -25,8 +25,10 @@ class TaskViewModel extends ChangeNotifier {
   List<Task>? _tasks;
   List<Task>? get tasks => _tasks;
 
-  Future<void> loadTasks() async {
-    _tasks = await _getTasksUseCase();
+  Future<void> loadTasks({
+    bool fromNetwork = false,
+  }) async {
+    _tasks = await _getTasksUseCase(fromNetwork: fromNetwork);
     notifyListeners();
   }
 
@@ -42,7 +44,7 @@ class TaskViewModel extends ChangeNotifier {
       isCompleted: false,
     );
     await _addTaskUseCase(task);
-    await loadTasks();
+    await loadTasks(fromNetwork: true);
   }
 
   Future<void> toggleTaskStatus(Task task) async {
@@ -54,18 +56,18 @@ class TaskViewModel extends ChangeNotifier {
       isCompleted: !task.isCompleted,
     );
     await _updateTaskUseCase(updatedTask);
-    await loadTasks();
+    await loadTasks(fromNetwork: true);
   }
 
   Future<void> updateTask(
     Task task,
   ) async {
     await _updateTaskUseCase(task);
-    await loadTasks();
+    await loadTasks(fromNetwork: true);
   }
 
   Future<void> deleteTask(int id) async {
     await _deleteTaskUseCase(id);
-    await loadTasks();
+    await loadTasks(fromNetwork: true);
   }
 }

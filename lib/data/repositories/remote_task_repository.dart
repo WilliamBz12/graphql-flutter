@@ -61,7 +61,9 @@ mutation deleteTaskById($id: Int!) {
   }
 
   @override
-  Future<List<Task>> getTasks() async {
+  Future<List<Task>> getTasks({
+    required bool fromNetwork,
+  }) async {
     const queryTasks = '''
 query {
   tasks {
@@ -77,7 +79,8 @@ query {
     final result = await client.query(
       QueryOptions(
         document: gql(queryTasks),
-        fetchPolicy: FetchPolicy.networkOnly,
+        fetchPolicy:
+            fromNetwork ? FetchPolicy.networkOnly : FetchPolicy.cacheFirst,
       ),
     );
 
