@@ -22,6 +22,8 @@ class MockTaskRepository implements TaskRepository {
   @override
   Future<List<Task>> getTasks({
     required bool fromNetwork,
+    required int page,
+    required int perPage,
   }) async {
     // Simula um pequeno atraso para imitar o comportamento de um banco de dados
     await Future.delayed(const Duration(milliseconds: 200));

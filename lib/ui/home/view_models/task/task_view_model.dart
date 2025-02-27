@@ -22,13 +22,18 @@ class TaskViewModel extends ChangeNotifier {
   final UpdateTaskUseCase _updateTaskUseCase;
   final DeleteTaskUseCase _deleteTaskUseCase;
 
+  final perPage = 5;
+
   List<Task>? _tasks;
   List<Task>? get tasks => _tasks;
 
   Future<void> loadTasks({
     bool fromNetwork = false,
   }) async {
-    _tasks = await _getTasksUseCase(fromNetwork: fromNetwork);
+    _tasks = await _getTasksUseCase(
+      fromNetwork: fromNetwork,
+      perPage: perPage,
+    );
     notifyListeners();
   }
 

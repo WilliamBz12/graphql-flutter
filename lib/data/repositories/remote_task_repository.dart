@@ -63,10 +63,12 @@ mutation deleteTaskById($id: Int!) {
   @override
   Future<List<Task>> getTasks({
     required bool fromNetwork,
+    required int page,
+    required int perPage,
   }) async {
-    const queryTasks = '''
-query {
-  tasks {
+    const queryTasks = r'''
+query fetchTasks($page: Int, $perPage: Int) {
+  tasks(limit: $perPage, offset: $page, order_by: {created_at: desc}) {
     id
     title
     isCompleted
@@ -79,6 +81,10 @@ query {
     final result = await client.query(
       QueryOptions(
         document: gql(queryTasks),
+        variables: {
+          'perPage': perPage,
+          'page': (page - 1) * perPage,
+        },
         fetchPolicy:
             fromNetwork ? FetchPolicy.networkOnly : FetchPolicy.cacheFirst,
       ),

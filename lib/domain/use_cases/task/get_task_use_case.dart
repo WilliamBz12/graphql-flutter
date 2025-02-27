@@ -11,9 +11,15 @@ class GetTasksUseCase {
 
   Future<List<Task>> call({
     required bool fromNetwork,
+    required int page,
+    required int perPage,
   }) async {
     try {
-      return await _repository.getTasks(fromNetwork: fromNetwork);
+      return await _repository.getTasks(
+        fromNetwork: fromNetwork,
+        page: page,
+        perPage: perPage,
+      );
     } catch (e) {
       debugPrint('Erro ao buscar tarefas: $e');
       rethrow;
