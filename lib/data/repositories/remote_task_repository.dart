@@ -128,4 +128,36 @@ mutation editTaskById($id: Int!, $category:String, $description: String, $title:
     final taskId = result.data?['update_tasks_by_pk']['id'];
     return taskId != null;
   }
+
+  @override
+  Stream<int> subscriptionPendingTasks() {
+    const queryTasks = r'''
+subscription {
+  tasks_aggregate(where: { isCompleted: {_eq: false}}) {
+    aggregate {
+      count
+    }
+  }
+}
+''';
+
+    final subscription = client.subscribe(
+      SubscriptionOptions(
+        document: gql(queryTasks),
+        fetchPolicy: FetchPolicy.networkOnly,
+      ),
+    );
+
+    return subscription.map<int>(
+      (result) {
+        if (result.hasException) {
+          print("Erro ao conectar");
+          return 0;
+        }
+
+        final data = result.data?['tasks_aggregate']['aggregate']['count'];
+        return data ?? 0;
+      },
+    );
+  }
 }

@@ -9,4 +9,5 @@ abstract class TaskRepository {
   });
   Future<bool> updateTask(Task task);
   Future<bool> deleteTask(int id);
+  Stream<int> subscriptionPendingTasks();
 }

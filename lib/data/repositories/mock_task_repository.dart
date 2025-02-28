@@ -51,4 +51,10 @@ class MockTaskRepository implements TaskRepository {
     }
     return false;
   }
+
+  @override
+  Stream<int> subscriptionPendingTasks() {
+    // TODO: implement subscriptionPendingTasks
+    throw UnimplementedError();
+  }
 }
