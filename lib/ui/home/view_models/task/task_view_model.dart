@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:sqlite_offline/domain/use_cases/task/pending_tasks_use_case.dart';
 
 import '../../../../domain/models/task/task.dart';
 import '../../../../domain/use_cases/task/add_task_use_case.dart';
@@ -13,20 +14,41 @@ class TaskViewModel extends ChangeNotifier {
     required GetTasksUseCase getTasksUseCase,
     required UpdateTaskUseCase updateTaskUseCase,
     required DeleteTaskUseCase deleteTaskUseCase,
+    required PendingTasksUseCase pendingTaskUseCase,
   })  : _addTaskUseCase = addTaskUseCase,
         _getTasksUseCase = getTasksUseCase,
         _updateTaskUseCase = updateTaskUseCase,
-        _deleteTaskUseCase = deleteTaskUseCase;
+        _deleteTaskUseCase = deleteTaskUseCase,
+        _pendingTasksUseCase = pendingTaskUseCase {
+    listenPendingTasks();
+  }
 
   final AddTaskUseCase _addTaskUseCase;
   final GetTasksUseCase _getTasksUseCase;
   final UpdateTaskUseCase _updateTaskUseCase;
   final DeleteTaskUseCase _deleteTaskUseCase;
+  final PendingTasksUseCase _pendingTasksUseCase;
 
   final perPage = 5;
 
   PagingState<int, Task> _pagingState = PagingState<int, Task>();
   PagingState<int, Task> get pagingState => _pagingState;
+
+  int _pendingTasks = 0;
+  int get pendingTasks => _pendingTasks;
+
+  late Stream<int> _pendingTaskStream;
+
+  void listenPendingTasks() {
+    _pendingTaskStream = _pendingTasksUseCase();
+
+    _pendingTaskStream.listen(
+      (event) {
+        _pendingTasks = event;
+        notifyListeners();
+      },
+    );
+  }
 
   void fetchNewPage() {
     final nextKey = ((_pagingState.keys?.isNotEmpty ?? false)

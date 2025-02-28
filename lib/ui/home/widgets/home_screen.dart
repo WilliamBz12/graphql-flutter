@@ -172,6 +172,12 @@ class _HomeScreenState extends State<HomeScreen> {
           const HeaderWidget(),
           const SliverToBoxAdapter(child: TaskHeader()),
           const SliverToBoxAdapter(child: SizedBox(height: 20)),
+          SliverPadding(
+            padding: const EdgeInsets.all(8),
+            sliver: SliverToBoxAdapter(
+              child: Text('${taskViewModel.pendingTasks} atividades pendentes'),
+            ),
+          ),
           SliverToBoxAdapter(
             child: AddTaskButton(
               onPressed: () {
