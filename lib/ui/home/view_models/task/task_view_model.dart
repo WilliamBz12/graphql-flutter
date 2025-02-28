@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 import '../../../../domain/models/task/task.dart';
 import '../../../../domain/use_cases/task/add_task_use_case.dart';
@@ -27,14 +28,46 @@ class TaskViewModel extends ChangeNotifier {
   List<Task>? _tasks;
   List<Task>? get tasks => _tasks;
 
+  PagingState<int, Task> _pagingState = PagingState<int, Task>();
+  PagingState<int, Task> get pagingState => _pagingState;
+
   Future<void> loadTasks({
+    required int pageKey,
     bool fromNetwork = false,
   }) async {
-    _tasks = await _getTasksUseCase(
-      fromNetwork: fromNetwork,
-      perPage: perPage,
+    final lastState = _pagingState;
+    _pagingState = PagingState(
+      isLoading: true,
+      error: null,
     );
     notifyListeners();
+
+    try {
+      final tasks = await _getTasksUseCase(
+        fromNetwork: fromNetwork,
+        perPage: perPage,
+        page: pageKey,
+      );
+
+      bool isLastPage = tasks.length < perPage;
+
+      _pagingState = PagingState(
+        isLoading: false,
+        pages: [
+          ...(lastState.pages ?? []),
+          tasks,
+        ],
+        error: null,
+        hasNextPage: !isLastPage,
+      );
+      notifyListeners();
+    } catch (e) {
+      _pagingState = lastState.copyWith(
+        isLoading: false,
+        error: e,
+      );
+      notifyListeners();
+    }
   }
 
   Future<void> addTask(
