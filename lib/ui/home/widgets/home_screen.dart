@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:sqlite_offline/domain/models/task/task.dart';
 import 'package:sqlite_offline/ui/home/widgets/header_widget.dart';
@@ -158,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     Future.microtask(
       () {
-        taskViewModel.loadTasks();
+        taskViewModel.loadTasks(pageKey: 1);
       },
     );
   }
@@ -184,23 +185,19 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 20)),
-          if (taskViewModel.tasks == null)
-            const SliverToBoxAdapter(
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            )
-          else if (taskViewModel.tasks!.isEmpty)
-            const SliverFillRemaining(
-              child: Center(child: Text('Sem dados cadastrados')),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList.builder(
-                itemCount: taskViewModel.tasks!.length,
-                itemBuilder: (context, index) {
-                  final task = taskViewModel.tasks![index];
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: PagedSliverList<int, Task>(
+              state: taskViewModel.pagingState,
+              fetchNextPage: taskViewModel.fetchNewPage,
+              builderDelegate: PagedChildBuilderDelegate(
+                firstPageProgressIndicatorBuilder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                newPageProgressIndicatorBuilder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+                itemBuilder: (context, task, index) {
                   return TaskCard(
                     task: task,
                     onToggleStatus: () => taskViewModel.toggleTaskStatus(task),
@@ -225,6 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
+          ),
         ],
       ),
     );

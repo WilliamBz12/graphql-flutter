@@ -25,18 +25,29 @@ class TaskViewModel extends ChangeNotifier {
 
   final perPage = 5;
 
-  List<Task>? _tasks;
-  List<Task>? get tasks => _tasks;
-
   PagingState<int, Task> _pagingState = PagingState<int, Task>();
   PagingState<int, Task> get pagingState => _pagingState;
 
+  void fetchNewPage() {
+    final nextKey = ((_pagingState.keys?.isNotEmpty ?? false)
+            ? _pagingState.keys!.last
+            : 0) +
+        1;
+    loadTasks(pageKey: nextKey);
+  }
+
+  void refresh() {
+    _pagingState = _pagingState.reset();
+    notifyListeners();
+    loadTasks(pageKey: 1);
+  }
+
   Future<void> loadTasks({
     required int pageKey,
-    bool fromNetwork = false,
+    bool fromNetwork = true,
   }) async {
     final lastState = _pagingState;
-    _pagingState = PagingState(
+    _pagingState = lastState.copyWith(
       isLoading: true,
       error: null,
     );
@@ -56,6 +67,10 @@ class TaskViewModel extends ChangeNotifier {
         pages: [
           ...(lastState.pages ?? []),
           tasks,
+        ],
+        keys: [
+          ...(lastState.keys ?? []),
+          pageKey,
         ],
         error: null,
         hasNextPage: !isLastPage,
@@ -82,7 +97,7 @@ class TaskViewModel extends ChangeNotifier {
       isCompleted: false,
     );
     await _addTaskUseCase(task);
-    await loadTasks(fromNetwork: true);
+    refresh();
   }
 
   Future<void> toggleTaskStatus(Task task) async {
@@ -94,18 +109,18 @@ class TaskViewModel extends ChangeNotifier {
       isCompleted: !task.isCompleted,
     );
     await _updateTaskUseCase(updatedTask);
-    await loadTasks(fromNetwork: true);
+    refresh();
   }
 
   Future<void> updateTask(
     Task task,
   ) async {
     await _updateTaskUseCase(task);
-    await loadTasks(fromNetwork: true);
+    refresh();
   }
 
   Future<void> deleteTask(int id) async {
     await _deleteTaskUseCase(id);
-    await loadTasks(fromNetwork: true);
+    refresh();
   }
 }
